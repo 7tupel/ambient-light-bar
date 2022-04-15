@@ -21,6 +21,8 @@
 
 #include "../config/wifi_credentials.h"
 
+/// Onboard LED
+#define BOARD_LED 2
 /// Pin used to control the LEDs
 #define PIN 0
 /// Number of connected LEDS
@@ -36,7 +38,12 @@ enum led_bar_mode {
   ANIMATION         // Animation mode - select an animation an its speed
 };
 
+///
+#define UDP_MULTICAST_ADDRESS 230, 120, 10, 1
 /// The port where the UDP server is listening
 #define UDP_PORT 8266
-/// Maximum size of UDP packets expected
-#define UDP_BUFFER_SIZE 8
+/// Maximum size of UDP packets expected + 1 byte
+#define UDP_BUFFER_SIZE 10
+
+/// Adress of the device. MSB, LSB
+#define DEVICE_ADDRESS 0x01, 0x07
