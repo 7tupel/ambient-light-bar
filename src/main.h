@@ -45,5 +45,5 @@ enum led_bar_mode {
 /// Maximum size of UDP packets expected + 1 byte
 #define UDP_BUFFER_SIZE 10
 
-///
-#define DEVICE_ADDRESS 0x0007
+/// Adress of the device. MSB, LSB
+#define DEVICE_ADDRESS 0x01, 0x07
