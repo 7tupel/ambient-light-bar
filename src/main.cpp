@@ -52,37 +52,61 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_LED, PIN, NEO_GRB + NEO_KHZ800)
  * Setup the board for network communication and LED control.
  */
 void setup() {
-  Serial.begin(MONITOR_SPEED);
-  // on board LED control Pin
-  pinMode(BOARD_LED, OUTPUT);
-  digitalWrite(BOARD_LED, LOW);
+  // setup serial debugging if enabled
+  #ifdef SERIAL_DEBUGGING
+    Serial.begin(MONITOR_SPEED);
+  #endif
+
+  // setup onboard LED for feedback if enabled
+  #ifdef USE_LED
+    // on board LED control Pin
+    pinMode(BOARD_LED, OUTPUT);
+    digitalWrite(BOARD_LED, LOW);
+  #endif
+
   // setup and connect to wifi
-  Serial.println("Connecting to Wifi");
+  #ifdef SERIAL_DEBUGGING
+    Serial.println("Connecting to Wifi");
+  #endif
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(100);
+    delay(500);
   }
-  Serial.println("\nConnected. Esp8266 IP: " + WiFi.localIP().toString());
-  Serial.printf("UDP Server Port: %d\n", UDP_PORT);
-  //Udp.begin(UDP_PORT);
-  Serial.printf("Multicast IP: %d.%d.%d.%d\n", multicast_ip_address_bytes[0], multicast_ip_address_bytes[1], multicast_ip_address_bytes[2], multicast_ip_address_bytes[3]);
-  if (!Udp.beginMulticast(WiFi.localIP(), multicastIP, UDP_PORT)) {
-    Serial.println("Error on Multicast Init");
-  }
+  #ifdef SERIAL_DEBUGGING
+    Serial.println("\nConnected. Esp8266 IP: " + WiFi.localIP().toString());
+    Serial.printf("UDP Server Port: %d\n", UDP_PORT);
+  #endif
+
+  // setup UDP server
+  #ifdef USE_MULTICAST
+    if (!Udp.beginMulticast(WiFi.localIP(), multicastIP, UDP_PORT)) {
+      #ifdef SERIAL_DEBUGGING
+        Serial.println("Error on Multicast Init");
+      #endif
+    } else {
+      Serial.printf("Listening og Multicast IP: %d.%d.%d.%d\n",
+        multicast_ip_address_bytes[0],
+        multicast_ip_address_bytes[1],
+        multicast_ip_address_bytes[2],
+        multicast_ip_address_bytes[3]);
+    }
+  #else
+    Udp.begin(UDP_PORT);
+  #endif
 
   // setup led control
   pixels.begin();
-  // run in RGB mode
-  mode = RGB;
-  // indicate setup was completed successfully
-  digitalWrite(BOARD_LED, HIGH);
+  #ifdef USE_LED
+    // indicate setup was completed successfully
+    digitalWrite(BOARD_LED, HIGH);
+  #endif
 }
 
 /**
  */
 void loop() {
-  /* First check if a calif wifi connection was established and retry if neccesary */
+  /* First check if a valid wifi connection was established and retry if neccesary */
   unsigned long current_time = millis();
   if ((WiFi.status() != WL_CONNECTED) && (current_time - last_wifi_check >= wifi_check_delay)) {
     WiFi.disconnect();
