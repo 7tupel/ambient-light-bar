@@ -117,6 +117,46 @@ void setup() {
 }
 
 /**
+ * Print the protocol version of the paket to serial.
+ */
+void print_protocol_version(uint8_t version) {
+  Serial.printf("Protocol Version: %d (%X)", version, version);
+}
+
+/**
+ * Print the opcode of the paket to serial.
+ */
+void print_op_code(uint8_t opcode) {
+  Serial.printf("Op Code: ");
+  switch(opcode) {
+    case 0x01:
+      Serial.printf("RGBI8_SET (%X)\n", opcode);
+      break;
+    case 0x02:
+      Serial.printf("RGBWI8_SET (%X)\n", opcode);
+      break;
+    default:
+      Serial.printf("UNKNOWN! - %X\n", opcode);
+  }
+}
+
+/**
+ * Print the parameter of a RGBI8 frame to serial.
+ */
+void print_rgbi8_data(uint8_t* data) {
+  Serial.printf("Color (RGB): %X, %X, %X\n", data[2], data[1], data[0]);
+  Serial.printf("Intensity: %X\n", data[3]);
+}
+
+/**
+ * Print the parameter of a RGBWI8 frame to serial.
+ */
+void print_rgbwi8_data(uint8_t* data) {
+  Serial.printf("Color (RGBW): %X, %X, %X, %X\n", data[3], data[2], data[1], data[0]);
+  Serial.printf("Intensity: %X\n", data[4]);
+}
+
+/**
  */
 void loop() {
   /* First check if a valid wifi connection was established and retry if neccesary */
@@ -151,12 +191,33 @@ void loop() {
 
     /* Parse the protocol */
 
+    #ifdef SERIAL_DEBUGGING
+      print_protocol_version(packet_buffer[0]);
+    #endif
+
     // protocol version 1
     if (packet_buffer[0] == 0x01) {
-      // opcode RGBWI8_SET
+      #ifdef SERIAL_DEBUGGING
+        print_op_code(packet_buffer[1]);
+      #endif
+
       if (packet_buffer[1] == 0x01) {
+        // opcode RGBI8_SET
+        #ifdef SERIAL_DEBUGGING
+          print_rgbi8_data(packet_buffer+2);
+        #endif
+        uint8_t intensity = packet_buffer[5];
+        uint32_t color = 0x00 << 24 | packet_buffer[4] << 16 | packet_buffer[3] << 8 | packet_buffer[2];
+        pixels.fill(color, 0, NUM_LED);
+        pixels.setBrightness(intensity);
+        pixels.show();
+      } else if (packet_buffer[1] == 0x02) {
+        // opcode RGBWI8_SET
+        #ifdef SERIAL_DEBUGGING
+          print_rgbwi8_data(packet_buffer+2);
+        #endif
         uint8_t intensity = packet_buffer[6];
-        uint32_t color = (unsigned int) atol((char*)packet_buffer+2);
+        uint32_t color = packet_buffer[5] << 24 | packet_buffer[4] << 16 | packet_buffer[3] << 8 | packet_buffer[2];
         pixels.fill(color, 0, NUM_LED);
         pixels.setBrightness(intensity);
         pixels.show();
