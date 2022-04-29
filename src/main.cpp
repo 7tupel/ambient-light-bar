@@ -207,7 +207,7 @@ void loop() {
           print_rgbi8_data(packet_buffer+2);
         #endif
         uint8_t intensity = packet_buffer[5];
-        uint32_t color = 0x00 << 24 | packet_buffer[4] << 16 | packet_buffer[3] << 8 | packet_buffer[2];
+        uint32_t color = 0x00 << 24 | packet_buffer[2] << 16 | packet_buffer[3] << 8 | packet_buffer[4];
         pixels.fill(color, 0, NUM_LED);
         pixels.setBrightness(intensity);
         pixels.show();
