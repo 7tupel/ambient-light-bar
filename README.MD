@@ -38,9 +38,14 @@ Version (1 byte) | OP (1 byte) | Data (m bytes)
 + **0x01** - `RGBWI8`
 
 
-##### RGBWI8 - 0x01
+##### RGBI8 - 0x01
 
 5 data bytes:
 ```
-Red (1 byte) | Green (1 byte) | Blue (1 byte) | White (1 Byte) | Intensity (1 byte)
+Red (1 byte) | Green (1 byte) | Blue (1 byte) | Intensity (1 byte)
+```
+
+Example UDP message:
+```sh
+echo -n -e "\x01\x01\xff\xff\xbb\xaa" | nc -c -w 1 -v -u 192.168.5.111 8266
 ```
